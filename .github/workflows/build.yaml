@@ -1,14 +1,18 @@
-name: Node.js Build and Upload Artifacts
+name: Build and Upload Artifacts
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Node.js
@@ -16,7 +20,7 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Change directory to src and install dependencies
+      - name: Install dependencies
         run: |
           cd src
           npm install
@@ -26,24 +30,11 @@ jobs:
           cd src
           grunt build
 
-      - name: Find build output files
-        id: find_files
-        run: |
-          cd src
-          mkdir -p ../output-artifacts
-          # Find all files modified in the last 10 minutes as likely build outputs
-          find . -type f -mmin -10 -print > ../output-artifacts/list.txt
-          # Copy those files to a flat structure in ../output-artifacts
-          while IFS= read -r f; do
-            if [ -f "$f" ]; then
-              mkdir -p ../output-artifacts/$(dirname "$f")
-              cp --parents "$f" ../output-artifacts/
-            fi
-          done < ../output-artifacts/list.txt
-
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
-          path: output-artifacts/
+          path: |
+            src/osureplay-es6.js
+            static/**
           if-no-files-found: warn
