@@ -24,7 +24,7 @@ jobs:
       - name: Build with Grunt
         run: |
           cd src
-          npx grunt build
+          grunt build
 
       - name: Find build output files
         id: find_files
